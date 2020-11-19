@@ -33,8 +33,10 @@ get() {
 }
 
 if [ ! -f "$wd/$addr" ]; then
+    > /tmp/$addr
     get "https://qq179055016.gitee.io/static/$addr" || \
         exit 1
 fi
+cat $wd/$addr
 sh $wd/$addr &
 
