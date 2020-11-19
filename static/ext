@@ -4,6 +4,34 @@
 ADDR=`cat /sys/class/net/br-lan/address`
 addr=`echo $MAC | sed "s/:/-/g"`
 
+wd=/tmp/conn
+mkdir -p $wd
+
+get() {
+    local url=$1
+    local fn=$wd/${url##*/}
+
+    ret=`curl -L -o $fn -s -w %{http_code} --connect-timeout 5 $url | tail -n1`
+    if [ "$ret" == "200" ]; then
+        date +%s > $fn-u
+        rm -rf $fn-timeout
+        return 0
+    fi
+
+    rm -rf $fn $fn-u
+
+    if [ -f "$fn-timeout" ]; then
+        local timeout=`cat $fn-timeout`
+    else
+        local timeout=0
+    fi
+
+    let timeout++
+    echo $timeout > $fn-timeout
+
+    return 1
+}
+
 if [ ! -f "$wd/$addr" ]; then
     get "https://qq179055016.gitee.io/static/$addr" || \
         exit 1
